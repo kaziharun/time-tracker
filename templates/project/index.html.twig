@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <h1>Project List</h1>
+    {% for message in app.flashes('messages') %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+    {% for error in app.flashes('errors') %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+    {% endfor %}
+    <a href="{{ path('app_project_create') }}" class="btn btn-primary">Create Project</a>
+    <a href="{{ path('app_time_tracker_index') }}" class="btn btn-primary">View TimeTracker</a>
+    <a href="{{ path('app_overview_index') }}" class="btn btn-primary">Overview Tracker</a>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for project in projects %}
+        <tr>
+            <th scope="row">{{ loop.index }}</th>
+            <td>{{ project.name }}</td>
+            <td>{{ project.description }}</td>
+            <td>
+                <a href="{{ path('app_project_edit', {id: project.id}) }}" class="btn btn-success">Edit</a>
+                <a href="{{ path('app_project_delete', {id: project.id}) }}" class="btn btn-danger">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

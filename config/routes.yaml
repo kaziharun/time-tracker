@@ -1,5 +1,84 @@
-controllers:
-    resource:
-        path: ../src/Controller/
-        namespace: App\Controller
-    type: attribute
+app_register:
+    path: /register
+    controller: App\Controller\RegistrationController::register
+    methods: ['POST', 'GET']]
+
+app_login:
+    path: /login
+    controller: App\Controller\SecurityController::login
+    methods: ['POST', 'GET']
+
+app_logout:
+    path: /logout
+    controller: App\Controller\SecurityController::logout
+    methods: ['POST']
+
+app_project_index:
+    path: /project
+    controller: App\Controller\ProjectController::index
+    methods: 'GET'
+
+app_project_create:
+    path: /project/create
+    controller: App\Controller\ProjectController::create
+    methods: 'GET'
+
+app_project_store:
+    path: /project/store
+    controller: App\Controller\ProjectController::store
+    methods: 'POST'
+
+app_project_edit:
+    path: /project/edit/{id}
+    controller: App\Controller\ProjectController::edit
+    methods: 'GET'
+
+app_project_update:
+    path: /project/edit/{id}
+    controller: App\Controller\ProjectController::update
+    methods: 'POST'
+
+app_project_delete:
+    path: /project/delete/{id}
+    controller: App\Controller\ProjectController::delete
+    methods: 'GET'
+
+app_time_tracker_index:
+    path: /time-tracker
+    controller: App\Controller\TimeTrackerController::index
+    methods: 'GET'
+
+app_time_tracker_create:
+    path: /time-tracker/create
+    controller: App\Controller\TimeTrackerController::create
+    methods: 'GET'
+
+app_time_tracker_store:
+    path: /time-tracker/store
+    controller: App\Controller\TimeTrackerController::store
+    methods: 'POST'
+
+app_time_tracker_edit:
+    path: /time-tracker/edit/{id}
+    controller: App\Controller\TimeTrackerController::edit
+    methods: 'GET'
+
+app_time_tracker_update:
+    path: /time-tracker/edit/{id}
+    controller: App\Controller\TimeTrackerController::update
+    methods: 'POST'
+
+app_time_tracker_delete:
+    path: /time-tracker/delete/{id}
+    controller: App\Controller\TimeTrackerController::delete
+    methods: 'GET'
+
+app_overview_index:
+    path: /overview
+    controller: App\Controller\OverviewController::index
+    methods: 'GET'
+
+app_overview_export_csv:
+    path: /overview/export-csv
+    controller: App\Controller\OverviewController::exportCSV
+    methods: 'GET'

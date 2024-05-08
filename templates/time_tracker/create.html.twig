@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h3>Time Tracker Create</h3>
+    {% for error in app.flashes('errors') %}
+        <div class="alert alert-warning">
+            {{ error }}
+        </div>
+    {% endfor %}
+    {{ form_start(form, {'action': path(submit_route)}) }}
+    <div class="form-group mt-2">
+        {{ form_label(form.project) }}
+        {{ form_widget(form.project) }}
+    </div>
+    <div class="form-group">
+        {{ form_label(form.name) }}
+        {{ form_widget(form.name) }}
+    </div>
+    <div class="form-group mt-2">
+        {{ form_label(form.start_date) }}
+        {{ form_widget(form.start_date) }}
+    </div>
+    <div class="form-group mt-2">
+        {{ form_label(form.start_time) }}
+        {{ form_widget(form.start_time) }}
+    </div>
+    <div class="form-group mt-2">
+        {{ form_label(form.end_time) }}
+        {{ form_widget(form.end_time) }}
+    </div>
+    <button type="submit" class="btn btn-primary  mt-2">Create</button>
+    <a href="{{ path('app_time_tracker_index') }}" class="btn btn-secondary mt-2">Cancel</a>
+    {{ form_end(form) }}
+
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello ProjectController!{% endblock %}
+
+{% block body %}
+    <h1>Create Project</h1>
+
+    {{ form_errors(form) }}
+
+    {{ form_start(form, {'action': path(submit_route)}) }}
+    <div class="form-group mt-2">
+        {{ form_label(form.name) }}
+        {{ form_widget(form.name) }}
+    </div>
+    <div class="form-group mt-2">
+        {{ form_label(form.description) }}
+        {{ form_widget(form.description) }}
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-2">Add Project</button>
+    <a href="{{ path('app_project_index') }}" class="btn btn-secondary mt-2">Cancel</a>
+    {{ form_end(form) }}
+{% endblock %}

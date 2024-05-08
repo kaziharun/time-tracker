@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Working Hour Overview</h1>
+    <a href="{{ path('app_time_tracker_create') }}" class="btn btn-primary">Add TimeTracker</a>
+    <a href="{{ path('app_time_tracker_index') }}" class="btn btn-primary">View TimeTracker</a>
+    <a href="{{ path('app_overview_export_csv') }}" class="btn btn-primary">Export CSV</a>
+    {% for overview in overviews %}
+        {% set number = 1 %}
+        <h2>Project: {{ overview.project_name }}</h2>
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Type</th>
+                <th scope="col">User Name</th>
+                <th scope="col">Project</th>
+                <th scope="col">Date</th>
+                <th scope="col">Time</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for date, hours in overview.daily_hours %}
+                <tr>
+                    <th scope="row">{{ number }} {% set number= number + 1 %}</th>
+                    <td>daily</td>
+                    <td>{{ overview.user_name }}</td>
+                    <td>{{ overview.project_name }}</td>
+                    <td>{{ date|date('Y-m-d') }}</td>
+                    <td>{{ hours|convertDecimalToHoursMinutes }}</td>
+                </tr>
+            {% endfor %}
+            {% for date, hours in overview.weekly_hours %}
+                <tr>
+                    <th scope="row">{{ number }} {% set number= number + 1 %}</th>
+                    <td>weekly</td>
+                    <td>{{ overview.user_name }}</td>
+                    <td>{{ overview.project_name }}</td>
+                    <td>{{ date }}</td>
+                    <td>{{ hours|convertDecimalToHoursMinutes }}</td>
+                </tr>
+            {% endfor %}
+            {% for date, hours in overview.monthly_hours %}
+                <tr>
+                    <th scope="row">{{ number }} {% set number= number + 1 %}</th>
+                    <td>monthly</td>
+                    <td>{{ overview.user_name }}</td>
+                    <td>{{ overview.project_name }}</td>
+                    <td>{{ date|date('Y-m') }}</td>
+                    <td>{{ hours|convertDecimalToHoursMinutes }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
+{% endblock %}
