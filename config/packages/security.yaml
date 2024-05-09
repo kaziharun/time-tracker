@@ -14,6 +14,10 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
+            entry_point: 'form_login'
+            form_login:
+                login_path: app_login
+                check_path: app_login
             lazy: true
             provider: app_user_provider
             custom_authenticator: App\Security\AppCustomAuthenticator
@@ -40,8 +44,9 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         # - { path: ^/admin, roles: ROLE_ADMIN }
-         - { path: ^/project, roles: ROLE_USER }
-         - { path: ^/time-tracker, roles: ROLE_USER }
+        - { path: ^/project, roles: ROLE_USER }
+        - { path: ^/time-tracker, roles: ROLE_USER }
+        - { path: ^/overview, roles: ROLE_USER }
 
 when@test:
     security:

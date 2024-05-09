@@ -14,13 +14,16 @@ class TimeTrackerValidator
 
     public function isEndTimeInvalid(TimeTracker $timeTracker): bool
     {
+        if (is_null($timeTracker->getEndTime())) {
+            return false;
+        }
+
         return $timeTracker->getStartTime() > $timeTracker->getEndTime();
     }
 
     public function hasOverlappingEntries(TimeTracker $timeTracker): bool
     {
         $overlaps = $this->findOverlappingEntries($timeTracker);
-
         return !empty($overlaps);
     }
 

@@ -1,26 +1,24 @@
 <?php
 declare(strict_types=1);
+
 namespace App\DTO;
 
-class ProjectDTO implements DTOInterface
+class ProjectDTO
 {
-    private ?string $name;
-    private ?string $description;
-
-    public function __construct(array $data)
+    public function __construct(
+        private string  $name,
+        private string $description
+    )
     {
-        $this->name = $data['project']['name'] ?? null;
-        $this->description = $data['project']['description'] ?? null;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function getDescription(): ?string
+    public function getDescription(): string
     {
         return $this->description;
     }
 }
-

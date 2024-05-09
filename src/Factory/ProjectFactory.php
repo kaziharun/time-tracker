@@ -2,16 +2,15 @@
 
 namespace App\Factory;
 
-
-use App\DTO\DTOInterface;
 use App\DTO\ProjectDTO;
 use App\Entity\Project;
 
-class ProjectFactory implements FactoryInterface
+class ProjectFactory
 {
-    public function create(ProjectDTO $dto): Project
+    public function createOrUpdate(ProjectDTO $dto, ?Project $project = null): Project
     {
-        $project = new Project();
+        $project = $project ?? new Project();
+
         $project->setName($dto->getName());
         $project->setDescription($dto->getDescription());
 

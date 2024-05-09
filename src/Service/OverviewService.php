@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\TimeTracker;
 use App\Entity\User;
 use App\Repository\TimeTrackerRepository;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,85 +18,117 @@ class OverviewService implements OverviewServiceInterface
     public function generateOverviewByProjects(User $user): array
     {
         $timeTracks = $this->timeTrackerRepository->findByUser($user->getId());
-
         $projectHours = [];
 
         foreach ($timeTracks as $timeTrack) {
-            $userName = $timeTrack->getUser()->getUsername();
-            $project = $timeTrack->getProject(); // Assuming 'getProject' returns the project entity
-            $projectId = $project->getId();
-            $projectName = $project->getName(); // Adjust this based on your actual project entity
-            $date = clone $timeTrack->getStartDate();
-            $start = $timeTrack->getStartTime();
-            $end = $timeTrack->getEndTime();
-            $duration = $end->diff($start);
-            $hours = round($duration->h + ($duration->i / 60) + ($duration->days * 24), 2);
+            if($timeTrack->getEndTime()){
+                $projectId = $timeTrack->getProject()->getId();
+                $hours = $this->calculateHours($timeTrack);
 
-            // Initialize project array if not set
-            if (!isset($projectHours[$projectId])) {
-                $projectHours[$projectId] = [
-                    'project_name' => $projectName,
-                    'user_name' => $userName,
-                    'daily_hours' => [],
-                    'weekly_hours' => [],
-                    'monthly_hours' => []
-                ];
-            }
+                if (!isset($projectHours[$projectId])) {
+                    $projectHours[$projectId] = $this->initializeProjectData($timeTrack);
+                }
 
-            // Daily Hours
-            $dailyDate = $date->format('Y-m-d');
-            if (!isset($projectHours[$projectId]['daily_hours'][$dailyDate])) {
-                $projectHours[$projectId]['daily_hours'][$dailyDate] = 0;
+                $projectHours[$projectId] = $this->updateProjectHours($projectHours[$projectId], $timeTrack, $hours);
             }
-            $projectHours[$projectId]['daily_hours'][$dailyDate] += $hours;
-
-            // Weekly Hours
-            $weekStartDate = (clone $date)->modify('last sunday');
-            $weeklyDate = $weekStartDate->format('Y-W');
-            if (!isset($projectHours[$projectId]['weekly_hours'][$weeklyDate])) {
-                $projectHours[$projectId]['weekly_hours'][$weeklyDate] = 0;
-            }
-            $projectHours[$projectId]['weekly_hours'][$weeklyDate] += $hours;
-
-            // Monthly Hours
-            $monthlyDate = $date->format('Y-m');
-            if (!isset($projectHours[$projectId]['monthly_hours'][$monthlyDate])) {
-                $projectHours[$projectId]['monthly_hours'][$monthlyDate] = 0;
-            }
-            $projectHours[$projectId]['monthly_hours'][$monthlyDate] += $hours;
         }
 
         return $projectHours;
     }
 
+    private function calculateHours(TimeTracker $timeTrack): float
+    {
+        $start = $timeTrack->getStartTime();
+        $end = $timeTrack->getEndTime();
+        $duration = $end->diff($start);
+        return round($duration->h + ($duration->i / 60) + ($duration->days * 24), 2);
+    }
+
+    private function initializeProjectData(TimeTracker $timeTrack): array
+    {
+        return [
+            'project_name' => $timeTrack->getProject()->getName(),
+            'user_name' => $timeTrack->getUser()->getUsername(),
+            'daily_hours' => [],
+            'weekly_hours' => [],
+            'monthly_hours' => []
+        ];
+    }
+
+    private function updateProjectHours(array $projectData, TimeTracker $timeTrack, float $hours): array
+    {
+        $date = clone $timeTrack->getStartDate();
+        $projectData['daily_hours'] = $this->updateDailyHours($projectData['daily_hours'], $date, $hours);
+        $projectData['weekly_hours'] = $this->updateWeeklyHours($projectData['weekly_hours'], $date, $hours);
+        $projectData['monthly_hours'] = $this->updateMonthlyHours($projectData['monthly_hours'], $date, $hours);
+
+        return $projectData;
+    }
+
+    private function updateDailyHours(array $dailyHours, \DateTimeInterface $date, float $hours): array
+    {
+        $dailyDate = $date->format('Y-m-d');
+        $dailyHours[$dailyDate] = ($dailyHours[$dailyDate] ?? 0) + $hours;
+        return $dailyHours;
+    }
+
+    private function updateWeeklyHours(array $weeklyHours, \DateTimeInterface $date, float $hours): array
+    {
+        $weekStartDate = (clone $date)->modify('last sunday');
+        $weeklyDate = $weekStartDate->format('Y-W');
+        $weeklyHours[$weeklyDate] = ($weeklyHours[$weeklyDate] ?? 0) + $hours;
+        return $weeklyHours;
+    }
+
+    private function updateMonthlyHours(array $monthlyHours, \DateTimeInterface $date, float $hours): array
+    {
+        $monthlyDate = $date->format('Y-m');
+        $monthlyHours[$monthlyDate] = ($monthlyHours[$monthlyDate] ?? 0) + $hours;
+        return $monthlyHours;
+    }
+
     public function exportToCsv(array $data): Response
     {
         $timestamp = (new \DateTime())->format('Ymd_His');
+        $filename = "time_tracker_export_{$timestamp}.csv";
 
         $response = new StreamedResponse(function () use ($data) {
-            $output = fopen('php://output', 'w');
-            fputcsv($output, [' ID', 'Type', 'User Name', 'Project Name', 'Date', 'Hours']);
-            $i = 1;
-            foreach ($data as $projectId => $projectData) {
-                $projectName = $projectData['project_name'];
-                $userName = $projectData['user_name'];
-                foreach ($projectData['daily_hours'] as $date => $hours) {
-                    fputcsv($output, [$i++, 'daily', $userName, $projectName, $date, $hours]);
-                }
-                foreach ($projectData['weekly_hours'] as $date => $hours) {
-                    fputcsv($output, [$i++, 'weekly', $userName, $projectName, $date, $hours]);
-                }
-                foreach ($projectData['monthly_hours'] as $date => $hours) {
-                    fputcsv($output, [$i++, 'monthly', $userName, $projectName, $date, $hours]);
-                }
-            }
-            fclose($output);
+            $this->writeCsv($data);
         });
 
         $response->setStatusCode(Response::HTTP_OK);
         $response->headers->set('Content-Type', 'text/csv');
-        $response->headers->set('Content-Disposition', 'attachment; filename="time_tracker_export_' . $timestamp . '.csv"');
+        $response->headers->set('Content-Disposition', "attachment; filename=\"{$filename}\"");
 
         return $response;
+    }
+
+    private function writeCsv(array $data): void
+    {
+        $output = fopen('php://output', 'w');
+        fputcsv($output, ['ID', 'Type', 'User Name', 'Project Name', 'Date', 'Hours']);
+        $i = 1;
+
+        foreach ($data as $projectData) {
+            $i = $this->writeProjectData($output, $projectData, $i);
+        }
+
+        fclose($output);
+    }
+
+    /**
+     * @param resource $output The output stream resource.
+     */
+    private function writeProjectData($output, array $projectData, int $i): int
+    {
+        $projectName = $projectData['project_name'];
+        $userName = $projectData['user_name'];
+
+        foreach (['daily_hours', 'weekly_hours', 'monthly_hours'] as $type) {
+            foreach ($projectData[$type] as $date => $hours) {
+                fputcsv($output, [$i++, $type, $userName, $projectName, $date, $hours]);
+            }
+        }
+        return $i;
     }
 }

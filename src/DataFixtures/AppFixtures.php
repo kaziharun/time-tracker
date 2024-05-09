@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\DataFixtures;
 
@@ -55,9 +56,6 @@ class AppFixtures extends Fixture
 
     public function loadTimeTrackers(ObjectManager $manager): void
     {
-        // Get all users and projects (you need to implement this)
-        //$users = $manager->getRepository(User::class)->findBy(['username' => ['tom','john']]);
-
         $users = $manager->getRepository(User::class)->createQueryBuilder('u')
             ->where('u.roles LIKE :role')
             ->setParameter('role', '%"ROLE_USER"%')
@@ -65,7 +63,7 @@ class AppFixtures extends Fixture
             ->getResult();
 
         $projects = $manager->getRepository(Project::class)->findAll();
-        // Generate random records for the last 3 months on weekdays
+
         $startDate = new \DateTime('-3 months');
         $endDate = new \DateTime('now');
 
@@ -73,7 +71,6 @@ class AppFixtures extends Fixture
         $period = new \DatePeriod($startDate, $interval, $endDate);
 
         foreach ($period as $date) {
-            // Skip weekends (Saturday and Sunday)
             if ($date->format('N') >= 6) {
                 continue;
             }
@@ -84,12 +81,10 @@ class AppFixtures extends Fixture
             $timeTracking->setName($this->getTaskData());
             $timeTracking->setStartDate($date);
 
-            // Calculate the start time
             $startTime = (new \DateTime($timeTracking->getStartDate()->format('Y-m-d')))
                 ->modify("+$startHour hours");
             $timeTracking->setStartTime($startTime);
 
-            // Calculate the end time
             $endTime = (clone $startTime)
                 ->modify("+$durationHours hours");
             $timeTracking->setEndTime($endTime);
@@ -117,9 +112,6 @@ class AppFixtures extends Fixture
         return $taskNames[array_rand($taskNames)];
     }
 
-    /**
-     * @return array<array{string, string}>
-     */
     private function getProjectData(): array
     {
         return [
@@ -129,9 +121,6 @@ class AppFixtures extends Fixture
         ];
     }
 
-    /**
-     * @return array<array{string, string, string, array<string>}>
-     */
     private function getUserData(): array
     {
         return [

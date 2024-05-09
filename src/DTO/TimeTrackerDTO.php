@@ -1,34 +1,44 @@
 <?php
 declare(strict_types=1);
+
 namespace App\DTO;
 
-class TimeTrackerDTO implements DTOInterface
+use App\Entity\Project;
+
+class TimeTrackerDTO
 {
-    private ?string $startDate;
-    private ?string $startTime;
-    private ?string $endTime;
-
-    public function __construct(array $data)
+    public function __construct(
+        private string $name,
+        private Project $project,
+        private string $startDate,
+        private string $startTime,
+        private ?string $endTime
+    )
     {
-        $this->startDate = $data['startDate'] ?? null;
-        $this->startTime = $data['startTime'] ?? null;
-        $this->endTime = $data['endTime'] ?? null;
-
     }
 
-    public function getEndTime(): mixed
+    public function getName(): string
     {
-        return $this->endTime;
+        return $this->name;
     }
 
-    public function getStartDate(): ?string
+    public function getProject(): Project
+    {
+        return $this->project;
+    }
+
+    public function getStartDate(): string
     {
         return $this->startDate;
     }
 
-    public function getStartTime(): ?string
+    public function getStartTime(): string
     {
         return $this->startTime;
     }
-}
 
+    public function getEndTime(): ?string
+    {
+        return $this->endTime;
+    }
+}

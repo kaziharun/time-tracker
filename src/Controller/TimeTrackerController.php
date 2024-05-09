@@ -3,22 +3,23 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\DTO\ProjectDTO;
-use App\DTO\TimeTrackerDTO;
-use App\Entity\TimeTracker;
-use App\Factory\TimeTrackerFactory;
+use App\Entity\User;
 use App\Form\TimeTrackerType;
-use App\Service\TimeTrackerService;
+use App\Mapper\TimeTrackerMapper;
+use App\Service\TimeTrackerServiceInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class TimeTrackerController extends AbstractController
 {
     public function __construct(
-        private TimeTrackerService $timeTrackerService,
-        private TimeTrackerFactory $timeTrackerFactory
+        private TimeTrackerServiceInterface $timeTrackerService,
+        private TimeTrackerMapper           $timeTrackerMapper,
+        private Security                    $security
     )
     {
     }
@@ -27,98 +28,105 @@ class TimeTrackerController extends AbstractController
     {
         $user = $this->getUser();
 
-        $timeTrackers = $this->timeTrackerService->getTimeTrackersForUser($user->getId());
+        $timeTrackers = $this->timeTrackerService->getTimeTrackersByUser($user);
 
         return $this->render('time_tracker/index.html.twig', [
             'timeTrackers' => $timeTrackers,
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
-        $form = $this->createForm(TimeTrackerType::class, new TimeTracker());
+        $user = $this->getUser();
 
-        return $this->render('time_tracker/create.html.twig', [
-            'form' => $form->createView(),
-            'submit_route' => 'app_time_tracker_store'
-        ]);
-    }
-
-    public function store(Request $request): Response
-    {
-        $timeTrackerDto = new TimeTrackerDTO($request->request->all());
-        $timeTracker = $this->timeTrackerFactory->create($timeTrackerDto, $this->getUser());
-
-        $form = $this->createForm(TimeTrackerType::class, $timeTracker);
+        $form = $this->createForm(TimeTrackerType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $result = $this->timeTrackerService->validateAndPersist($timeTracker);
-            if ($result->isSuccess()) {
-                $this->addFlash('messages', $result->getMessage());
-                return $this->redirectToRoute('app_time_tracker_index');
-            }
 
-            $this->addFlash('errors', $result->getMessage());
-        }
+            try {
+                $timeTrackerDTO = $this->timeTrackerMapper->transform($form->getData());
 
-        return $this->renderForm('time_tracker/create.html.twig', [
-            'form' => $form->createView(),
-            'submit_route' => 'app_time_tracker_store'
-        ]);
-    }
+                $result = $this->timeTrackerService->validateAndPersist($timeTrackerDTO, $user);
 
-    public function edit(int $id): Response
-    {
-        try {
-            $timeTracker = $this->timeTrackerService->findTimeTrackerOrThrow($id);
-            $form = $this->createForm(TimeTrackerType::class, $timeTracker);
-
-            return $this->renderForm('time_tracker/edit.html.twig', [
-                'form' => $form,
-                'submit_route' => 'app_time_tracker_update',
-                'id' => $id
-            ]);
-        } catch (NotFoundHttpException $exception) {
-            $this->addFlash('errors', $exception->getMessage());
-        }
-        return $this->redirectToRoute('app_time_tracker_index');
-    }
-
-    public function update(Request $request, int $id): Response
-    {
-        try {
-            $timeTracker = $this->timeTrackerService->findTimeTrackerOrThrow($id);
-            $form = $this->createForm(TimeTrackerType::class, $timeTracker);
-            $form->handleRequest($request);
-
-            if ($form->isSubmitted() && $form->isValid()) {
-                $result = $this->timeTrackerService->updateTimeTracker($timeTracker);
                 if ($result->isSuccess()) {
-                    $this->addFlash('success', 'Time tracker updated successfully.');
+
+                    $this->addFlash('messages', $result->getMessage());
                     return $this->redirectToRoute('app_time_tracker_index');
                 }
 
                 $this->addFlash('errors', $result->getMessage());
+            } catch (\Exception $e) {
+                $this->addFlash('errors', 'Error creating time tracker: ' . $e->getMessage());
             }
-        } catch (NotFoundHttpException $exception) {
-            $this->addFlash('errors', $exception->getMessage());
         }
+
+        return $this->renderForm('time_tracker/create.html.twig', [
+            'form' => $form,
+        ]);
+    }
+
+    public function edit(Request $request, int $id): Response
+    {
+        $user = $this->getUser();
+
+        try {
+            $timeTracker = $this->timeTrackerService->findTimeTrackerOrThrow($user, $id);
+
+            $form = $this->createForm(TimeTrackerType::class, $timeTracker);
+            $form->handleRequest($request);
+
+            if ($form->isSubmitted() && $form->isValid()) {
+
+                $timeTrackerDto = $this->timeTrackerMapper->transform($form->getData());
+
+                $result = $this->timeTrackerService->updateTimeTracker($timeTrackerDto, $timeTracker, $user);
+
+                if ($result->isSuccess()) {
+
+                    $this->addFlash('messages', $result->getMessage());
+                    return $this->redirectToRoute('app_time_tracker_index');
+                }
+
+                $this->addFlash('errors', $result->getMessage());
+
+            }
+        } catch (\Exception $e) {
+
+            $this->addFlash('errors', 'Error creating time tracker: ' . $e->getMessage());
+        }
+
+        if (!isset($form)) {
+            $form = $this->createForm(TimeTrackerType::class);
+        }
+
         return $this->renderForm('time_tracker/edit.html.twig', [
-            'form' => $form->createView(),
-            'submit_route' => 'app_time_tracker_update',
-            'id' => $id
+            'form' => $form,
         ]);
     }
 
     public function delete(int $id): Response
     {
+        $user = $this->getUser();
+
         try {
-            $this->timeTrackerService->deleteTimeTracker($id);
+            $this->timeTrackerService->deleteTimeTracker($user, $id);
+
             $this->addFlash('messages', 'Time tracker deleted successfully.');
-        } catch (NotFoundHttpException $exception) {
+
+        } catch (AccessDeniedHttpException|NotFoundHttpException $exception) {
+
             $this->addFlash('errors', $exception->getMessage());
         }
         return $this->redirectToRoute('app_time_tracker_index');
+    }
+
+    public function getUser(): ?User
+    {
+        $user = $this->security->getUser();
+
+        assert($user instanceof User);
+
+        return $user;
     }
 }

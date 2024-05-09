@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Repository;
 
@@ -25,19 +26,28 @@ class TimeTrackerRepository extends ServiceEntityRepository
         );
     }
 
-    public function findOverlappingEntries(\DateTimeInterface $startDate, \DateTimeInterface $startTime, \DateTimeInterface $endTime, int $userId): array
-    {
-        $qb = $this->createQueryBuilder('t');
-
-        return $qb->where('t.user = :user')
+    public function findOverlappingEntries(
+        \DateTimeInterface $startDate,
+        \DateTimeInterface $startTime,
+        ?\DateTimeInterface $endTime,
+        int $userId
+    ): array {
+        $qb = $this->createQueryBuilder('t')
+            ->where('t.user = :user')
             ->andWhere('t.startDate = :startDate')
             ->andWhere('t.startTime < :endTime')
             ->andWhere('t.endTime > :startTime')
             ->setParameter('user', $userId)
             ->setParameter('startDate', $startDate)
-            ->setParameter('startTime', $startTime)
-            ->setParameter('endTime', $endTime)
-            ->getQuery()
-            ->getResult();
+            ->setParameter('startTime', $startTime);
+
+        if ($endTime) {
+            $qb->setParameter('endTime', $endTime);
+        } else {
+            $qb->setParameter('endTime', $startTime);
+        }
+
+        return $qb->getQuery()->getResult();
     }
+
 }

@@ -3,78 +3,98 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\DTO\TimeTrackerDTO;
 use App\Entity\TimeTracker;
+use App\Entity\User;
+use App\Factory\TimeTrackerFactory;
 use App\Repository\TimeTrackerRepository;
 use App\Validator\TimeTrackerValidator;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class TimeTrackerService
+class TimeTrackerService implements TimeTrackerServiceInterface
 {
     public function __construct(
-        private TimeTrackerRepository $timeTrackerRepository,
-        private TimeTrackerValidator $validator,
-        private EntityManagerInterface $entityManager
+        private TimeTrackerRepository  $timeTrackerRepository,
+        private TimeTrackerValidator   $validator,
+        private EntityManagerInterface $entityManager,
+        private TimeTrackerFactory     $timeTrackerFactory
     )
     {
     }
 
-    public function getTimeTrackersForUser(int $userId): array
+    public function getTimeTrackersByUser(User $user): array
     {
-        return $this->timeTrackerRepository->findByUser($userId);
+        return $this->timeTrackerRepository->findByUser($user->getId());
     }
 
-    public function validateAndPersist(TimeTracker $timeTracker): Result
+    public function validateAndPersist(TimeTrackerDTO $timeTrackerDto, User $user): Result
     {
+        $timeTracker = $this->timeTrackerFactory->createOrUpdate($timeTrackerDto, $user);
+
         if ($this->validator->isEndTimeInvalid($timeTracker)) {
-            return new Result(false, 'End time cannot be earlier than start time.');
+            return Result::Failed('End time cannot be earlier than start time.');
         }
 
         if ($this->validator->hasOverlappingEntries($timeTracker)) {
-            return new Result(false, 'There is an overlapping entry.');
+
+            return Result::Failed('There is an overlapping entry.');
         }
 
         $this->entityManager->persist($timeTracker);
         $this->entityManager->flush();
 
-        return new Result(true, 'Time tracker created Successfully.');
+        return Result::Success('Time tracker created Successfully.');
     }
 
-    public function findTimeTrackerOrThrow(int $id): TimeTracker
+    public function findTimeTrackerOrThrow(User $user, int $id): TimeTracker
     {
-        $timeTracker = $this->timeTrackerRepository->find($id);
+        $timeTracker = $this->timeTrackerRepository->findOneBy(
+            [
+                'id' => $id,
+                'user' => $user->getId()
+            ]
+        );
+
         if (!$timeTracker) {
             throw new NotFoundHttpException('The time tracker does not exist.');
         }
         return $timeTracker;
     }
 
-    public function updateTimeTracker(TimeTracker $timeTracker): Result
+    public function updateTimeTracker(TimeTrackerDTO $timeTrackerDto, TimeTracker $timeTracker, User $user): Result
     {
+        $timeTracker = $this->timeTrackerFactory->createOrUpdate($timeTrackerDto, $user, $timeTracker);
+
         if ($this->validator->isEndTimeInvalid($timeTracker)) {
-            return new Result(false, 'End time cannot be earlier than start time.');
+            return Result::Failed('End time cannot be earlier than start time.');
         }
 
         $overlaps = $this->validator->findOverlappingEntries($timeTracker);
 
         foreach ($overlaps as $overlap) {
             if ($overlap->getId() !== $timeTracker->getId()) {
-                return new Result(false, 'There is an overlapping entry.');
+                return Result::Failed( 'There is an overlapping entry.');
             }
         }
 
         $this->entityManager->persist($timeTracker);
         $this->entityManager->flush();
 
-        return new Result(true, 'Time tracker has been updated.');
+        return Result::Success('Time tracker has been updated.');
     }
 
-    public function deleteTimeTracker(int $id): void
+    public function deleteTimeTracker(User $user, int $id): void
     {
         $timeTracker = $this->timeTrackerRepository->find($id);
 
         if (!$timeTracker) {
             throw new NotFoundHttpException('The time tracker does not exist.');
+        }
+
+        if($user->getId() !== $timeTracker->getUser()->getId()){
+            throw new AccessDeniedHttpException('You do not have permission to delete this time tracker.');
         }
 
         $this->entityManager->remove($timeTracker);

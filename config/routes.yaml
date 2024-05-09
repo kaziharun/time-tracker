@@ -11,7 +11,7 @@ app_login:
 app_logout:
     path: /logout
     controller: App\Controller\SecurityController::logout
-    methods: ['POST']
+    methods: ['GET']
 
 app_project_index:
     path: /project
@@ -21,22 +21,12 @@ app_project_index:
 app_project_create:
     path: /project/create
     controller: App\Controller\ProjectController::create
-    methods: 'GET'
-
-app_project_store:
-    path: /project/store
-    controller: App\Controller\ProjectController::store
-    methods: 'POST'
+    methods: ['GET','POST']
 
 app_project_edit:
     path: /project/edit/{id}
     controller: App\Controller\ProjectController::edit
-    methods: 'GET'
-
-app_project_update:
-    path: /project/edit/{id}
-    controller: App\Controller\ProjectController::update
-    methods: 'POST'
+    methods: ['GET','POST']
 
 app_project_delete:
     path: /project/delete/{id}
@@ -51,22 +41,12 @@ app_time_tracker_index:
 app_time_tracker_create:
     path: /time-tracker/create
     controller: App\Controller\TimeTrackerController::create
-    methods: 'GET'
-
-app_time_tracker_store:
-    path: /time-tracker/store
-    controller: App\Controller\TimeTrackerController::store
-    methods: 'POST'
+    methods: ['GET','POST']
 
 app_time_tracker_edit:
     path: /time-tracker/edit/{id}
     controller: App\Controller\TimeTrackerController::edit
-    methods: 'GET'
-
-app_time_tracker_update:
-    path: /time-tracker/edit/{id}
-    controller: App\Controller\TimeTrackerController::update
-    methods: 'POST'
+    methods: ['GET','POST']
 
 app_time_tracker_delete:
     path: /time-tracker/delete/{id}
@@ -82,3 +62,7 @@ app_overview_export_csv:
     path: /overview/export-csv
     controller: App\Controller\OverviewController::exportCSV
     methods: 'GET'
+default:
+    path: /
+    controller: App\Controller\SecurityController::login
+    methods: ['POST', 'GET']]

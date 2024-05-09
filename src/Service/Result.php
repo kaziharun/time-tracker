@@ -6,7 +6,7 @@ namespace App\Service;
 class Result
 {
     public function __construct(
-        private bool $success,
+        private bool   $success,
         private string $message
     )
     {
@@ -22,9 +22,13 @@ class Result
         return $this->message;
     }
 
-    public function addMessage(string $message): self
+    public static function Failed(string $message): self
     {
-        $this->message = $message;
-        return $this;
+        return new self(false, $message);
+    }
+
+    public static function Success(string $message): self
+    {
+        return new self(true, $message);
     }
 }

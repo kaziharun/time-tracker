@@ -5,7 +5,7 @@
 
     {{ form_errors(form) }}
 
-    {{ form_start(form, {'action': path(submit_route, {'id': id})}) }}
+    {{ form_start(form) }}
     <div class="form-group mt-2">
         {{ form_label(form.name) }}
         {{ form_widget(form.name) }}
