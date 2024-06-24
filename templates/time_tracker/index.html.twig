@@ -15,7 +15,7 @@
     <a href="{{ path('app_time_tracker_create') }}" class="btn btn-primary">Add TimeTracker</a>
     <a href="{{ path('app_project_index') }}" class="btn btn-primary">View Project</a>
     <a href="{{ path('app_overview_index') }}" class="btn btn-primary">Overview Tracker</a>
-    <a href="{{ path('app_overview_export_csv') }}" class="btn btn-primary">Export CSV</a>
+    <a href="{{ path('app_export', {format: 'csv'}) }}" class="btn btn-primary">Export CSV</a>
     <a href="{{ path('app_logout') }}" class="btn btn-danger">Logout</a>
     <table class="table">
         <thead>
@@ -47,8 +47,8 @@
                     {% endif %}
                 </td>
                 <td>
-                    <a href="{{ path('app_time_tracker_edit', {id: timeTracker.id}) }}" class="btn btn-success">Edit</a>
-                    <a href="{{ path('app_time_tracker_delete', {id: timeTracker.id}) }}" class="btn btn-danger">Delete</a>
+                    <a href="{{ path('app_time_tracker_edit', {timeTrackerId: timeTracker.id}) }}" class="btn btn-success">Edit</a>
+                    <a href="{{ path('app_time_tracker_delete', {timeTrackerId: timeTracker.id}) }}" class="btn btn-danger">Delete</a>
                 </td>
             </tr>
         {% endfor %}

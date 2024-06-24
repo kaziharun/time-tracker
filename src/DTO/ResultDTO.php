@@ -1,15 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
-namespace App\Service;
+namespace App\DTO;
 
-class Result
+class ResultDTO
 {
-    public function __construct(
-        private bool   $success,
-        private string $message
-    )
-    {
+    private function __construct(
+        private readonly bool $success,
+        private readonly string $message
+    ) {
     }
 
     public function isSuccess(): bool

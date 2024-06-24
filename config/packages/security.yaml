@@ -47,6 +47,7 @@ security:
         - { path: ^/project, roles: ROLE_USER }
         - { path: ^/time-tracker, roles: ROLE_USER }
         - { path: ^/overview, roles: ROLE_USER }
+        - { path: ^/export, roles: ROLE_USER }
 
 when@test:
     security:

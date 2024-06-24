@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Form;
@@ -18,14 +19,14 @@ class TimeTrackerType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('name', TextType::class,[
+            ->add('name', TextType::class, [
                 'label' => 'Task Name',
                 'required' => true,
                 'attr' => [
                     'placeholder' => 'Name',
                     'class' => 'form-control',
-                    'style' => 'width: 400px;'
-                ]
+                    'style' => 'width: 400px;',
+                ],
             ])
             ->add('start_date', DateType::class, [
                 'label' => 'Start Date',
@@ -33,28 +34,28 @@ class TimeTrackerType extends AbstractType
                 'required' => true,
                 'attr' => [
                     'class' => 'form-control',
-                    'style' => 'width: 200px;'
-                ]
+                    'style' => 'width: 200px;',
+                ],
             ])
             ->add('start_time', TimeType::class, [
                 'label' => 'Start Time',
-                'input'  => 'datetime',
+                'input' => 'datetime',
                 'widget' => 'single_text',
                 'required' => true,
                 'attr' => [
                     'class' => 'form-control',
-                    'style' => 'width: 200px;'
-                ]
+                    'style' => 'width: 200px;',
+                ],
             ])
             ->add('end_time', TimeType::class, [
                 'label' => 'End Time',
-                'input'  => 'datetime',
+                'input' => 'datetime',
                 'widget' => 'single_text',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'style' => 'width: 200px;'
-                ]
+                    'style' => 'width: 200px;',
+                ],
             ])
             ->add('project', EntityType::class, [
                 'class' => Project::class,
@@ -63,8 +64,8 @@ class TimeTrackerType extends AbstractType
                 'required' => true,
                 'attr' => [
                     'class' => 'form-control',
-                    'style' => 'width: 400px;'
-                ]
+                    'style' => 'width: 400px;',
+                ],
             ])
         ;
     }

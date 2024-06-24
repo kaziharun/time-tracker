@@ -4,7 +4,7 @@
     <h1>Working Hour Overview</h1>
     <a href="{{ path('app_time_tracker_create') }}" class="btn btn-primary">Add TimeTracker</a>
     <a href="{{ path('app_time_tracker_index') }}" class="btn btn-primary">View TimeTracker</a>
-    <a href="{{ path('app_overview_export_csv') }}" class="btn btn-primary">Export CSV</a>
+    <a href="{{ path('app_export', {format: 'csv'}) }}" class="btn btn-primary">Export CSV</a>
     {% for overview in overviews %}
         {% set number = 1 %}
         <h2>Project: {{ overview.project_name }}</h2>

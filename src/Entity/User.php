@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Entity;
@@ -19,13 +20,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     final public const ROLE_USER = 'ROLE_USER';
     final public const ROLE_ADMIN = 'ROLE_ADMIN';
 
+    /**
+     * @var $id;
+     */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private int $id;
 
     #[ORM\Column(length: 180)]
-    private ?string $username = null;
+    private string $username;
 
     /**
      * @var list<string> The user roles
@@ -37,7 +41,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column]
-    private ?string $password = null;
+    private string $password;
 
     #[ORM\Column(length: 100)]
     private ?string $email = null;
@@ -53,12 +57,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->timeTrackers = new ArrayCollection();
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getUsername(): ?string
+    public function getUsername(): string
     {
         return $this->username;
     }

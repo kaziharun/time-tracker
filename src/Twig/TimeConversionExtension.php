@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Twig;
@@ -8,10 +9,10 @@ use Twig\TwigFilter;
 
 class TimeConversionExtension extends AbstractExtension
 {
-    public function getFilters()
+    public function getFilters(): array
     {
         return [
-            new TwigFilter('convertDecimalToHoursMinutes', [$this, 'convertDecimalToHoursMinutes']),
+            new TwigFilter('convertDecimalToHoursMinutes', $this->convertDecimalToHoursMinutes(...)),
         ];
     }
 
@@ -20,6 +21,6 @@ class TimeConversionExtension extends AbstractExtension
         $hours = floor($decimalHours);
         $minutes = round(($decimalHours - $hours) * 60);
 
-        return sprintf("%d hours %d minutes", $hours, $minutes);
+        return sprintf('%d hours %d minutes', $hours, $minutes);
     }
 }

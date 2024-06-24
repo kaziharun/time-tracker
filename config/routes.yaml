@@ -24,12 +24,12 @@ app_project_create:
     methods: ['GET','POST']
 
 app_project_edit:
-    path: /project/edit/{id}
+    path: /project/edit/{projectId}
     controller: App\Controller\ProjectController::edit
     methods: ['GET','POST']
 
 app_project_delete:
-    path: /project/delete/{id}
+    path: /project/delete/{projectId}
     controller: App\Controller\ProjectController::delete
     methods: 'GET'
 
@@ -44,12 +44,12 @@ app_time_tracker_create:
     methods: ['GET','POST']
 
 app_time_tracker_edit:
-    path: /time-tracker/edit/{id}
+    path: /time-tracker/edit/{timeTrackerId}
     controller: App\Controller\TimeTrackerController::edit
     methods: ['GET','POST']
 
 app_time_tracker_delete:
-    path: /time-tracker/delete/{id}
+    path: /time-tracker/delete/{timeTrackerId}
     controller: App\Controller\TimeTrackerController::delete
     methods: 'GET'
 
@@ -58,9 +58,9 @@ app_overview_index:
     controller: App\Controller\OverviewController::index
     methods: 'GET'
 
-app_overview_export_csv:
-    path: /overview/export-csv
-    controller: App\Controller\OverviewController::exportCSV
+app_export:
+    path: /export/{format}
+    controller: App\Controller\ExporterController::export
     methods: 'GET'
 default:
     path: /

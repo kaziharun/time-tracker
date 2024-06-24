@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Mapper;
 
-use App\Entity\Project;
 use App\DTO\ProjectDTO;
+use App\Entity\Project;
 
 class ProjectMapper
 {

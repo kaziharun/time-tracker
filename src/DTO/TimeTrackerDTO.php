@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\DTO;
@@ -8,21 +9,20 @@ use App\Entity\Project;
 class TimeTrackerDTO
 {
     public function __construct(
-        private string $name,
-        private Project $project,
-        private string $startDate,
-        private string $startTime,
-        private ?string $endTime
-    )
-    {
+        private readonly ?string $name,
+        private readonly ?Project $project,
+        private readonly string $startDate,
+        private readonly string $startTime,
+        private readonly ?string $endTime
+    ) {
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    public function getProject(): Project
+    public function getProject(): ?Project
     {
         return $this->project;
     }

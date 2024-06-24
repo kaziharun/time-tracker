@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Form;
@@ -19,14 +20,14 @@ class RegistrationFormType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('username', TextType::class,[
+            ->add('username', TextType::class, [
                 'label' => 'Username',
                 'attr' => [
                     'class' => 'form-control',
                     'style' => 'width:400px',
                 ],
             ])
-            ->add('email', TextType::class,[
+            ->add('email', TextType::class, [
                 'label' => 'Email',
                 'attr' => [
                     'class' => 'form-control',
@@ -48,7 +49,7 @@ class RegistrationFormType extends AbstractType
             ->add('plainPassword', PasswordType::class, [
                 'label' => 'Password',
 
-                 'mapped' => false,
+                'mapped' => false,
                 'attr' => [
                     'autocomplete' => 'new-password',
                     'style' => 'width:400px',

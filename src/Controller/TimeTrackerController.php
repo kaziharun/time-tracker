@@ -1,27 +1,29 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\User;
+use App\Entity\TimeTracker;
 use App\Form\TimeTrackerType;
 use App\Mapper\TimeTrackerMapper;
 use App\Service\TimeTrackerServiceInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-class TimeTrackerController extends AbstractController
+#[IsGranted('ROLE_USER')]
+class TimeTrackerController extends AbstractBaseController
 {
     public function __construct(
-        private TimeTrackerServiceInterface $timeTrackerService,
-        private TimeTrackerMapper           $timeTrackerMapper,
-        private Security                    $security
-    )
-    {
+        private readonly TimeTrackerServiceInterface $timeTrackerService,
+        private readonly TimeTrackerMapper $timeTrackerMapper,
+        private readonly Security $security
+    ) {
+        parent::__construct($this->security);
     }
 
     public function index(): Response
@@ -43,21 +45,23 @@ class TimeTrackerController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
             try {
-                $timeTrackerDTO = $this->timeTrackerMapper->transform($form->getData());
+                /** @var TimeTracker $timeTracker */
+                $timeTracker = $form->getData();
 
-                $result = $this->timeTrackerService->validateAndPersist($timeTrackerDTO, $user);
+                $timeTrackerDto = $this->timeTrackerMapper->transform($timeTracker);
+
+                $result = $this->timeTrackerService->validateAndPersist($timeTrackerDto, $user);
 
                 if ($result->isSuccess()) {
-
                     $this->addFlash('messages', $result->getMessage());
+
                     return $this->redirectToRoute('app_time_tracker_index');
                 }
 
                 $this->addFlash('errors', $result->getMessage());
             } catch (\Exception $e) {
-                $this->addFlash('errors', 'Error creating time tracker: ' . $e->getMessage());
+                $this->addFlash('errors', 'Error creating time tracker: '.$e->getMessage());
             }
         }
 
@@ -66,37 +70,34 @@ class TimeTrackerController extends AbstractController
         ]);
     }
 
-    public function edit(Request $request, int $id): Response
+    public function edit(Request $request, int $timeTrackerId): Response
     {
         $user = $this->getUser();
 
         try {
-            $timeTracker = $this->timeTrackerService->findTimeTrackerOrThrow($user, $id);
+            $timeTracker = $this->timeTrackerService->findTimeTrackerOrThrow($user, $timeTrackerId);
 
             $form = $this->createForm(TimeTrackerType::class, $timeTracker);
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
+                /** @var TimeTracker $timeTracker */
+                $timeTracker = $form->getData();
 
-                $timeTrackerDto = $this->timeTrackerMapper->transform($form->getData());
+                $timeTrackerDto = $this->timeTrackerMapper->transform($timeTracker);
 
                 $result = $this->timeTrackerService->updateTimeTracker($timeTrackerDto, $timeTracker, $user);
 
                 if ($result->isSuccess()) {
-
                     $this->addFlash('messages', $result->getMessage());
+
                     return $this->redirectToRoute('app_time_tracker_index');
                 }
 
                 $this->addFlash('errors', $result->getMessage());
-
             }
         } catch (\Exception $e) {
-
-            $this->addFlash('errors', 'Error creating time tracker: ' . $e->getMessage());
-        }
-
-        if (!isset($form)) {
+            $this->addFlash('errors', 'Error creating time tracker: '.$e->getMessage());
             $form = $this->createForm(TimeTrackerType::class);
         }
 
@@ -105,28 +106,18 @@ class TimeTrackerController extends AbstractController
         ]);
     }
 
-    public function delete(int $id): Response
+    public function delete(int $timeTrackerId): Response
     {
         $user = $this->getUser();
 
         try {
-            $this->timeTrackerService->deleteTimeTracker($user, $id);
+            $this->timeTrackerService->deleteTimeTracker($user, $timeTrackerId);
 
             $this->addFlash('messages', 'Time tracker deleted successfully.');
-
         } catch (AccessDeniedHttpException|NotFoundHttpException $exception) {
-
             $this->addFlash('errors', $exception->getMessage());
         }
+
         return $this->redirectToRoute('app_time_tracker_index');
-    }
-
-    public function getUser(): ?User
-    {
-        $user = $this->security->getUser();
-
-        assert($user instanceof User);
-
-        return $user;
     }
 }

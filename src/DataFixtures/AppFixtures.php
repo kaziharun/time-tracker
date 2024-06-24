@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\DataFixtures;
@@ -14,8 +15,7 @@ class AppFixtures extends Fixture
 {
     public function __construct(
         private readonly UserPasswordHasherInterface $passwordHasher
-    )
-    {
+    ) {
     }
 
     public function load(ObjectManager $manager): void
@@ -23,7 +23,6 @@ class AppFixtures extends Fixture
         $this->loadUsers($manager);
         $this->loadProjects($manager);
         $this->loadTimeTrackers($manager);
-
     }
 
     public function loadUsers(ObjectManager $manager): void
@@ -48,7 +47,6 @@ class AppFixtures extends Fixture
             $project->setDescription($description);
 
             $manager->persist($project);
-
         }
 
         $manager->flush();
@@ -56,12 +54,14 @@ class AppFixtures extends Fixture
 
     public function loadTimeTrackers(ObjectManager $manager): void
     {
+        /** @var array<User> $users */
         $users = $manager->getRepository(User::class)->createQueryBuilder('u')
             ->where('u.roles LIKE :role')
             ->setParameter('role', '%"ROLE_USER"%')
             ->getQuery()
             ->getResult();
 
+        /** @var array<Project> $projects */
         $projects = $manager->getRepository(Project::class)->findAll();
 
         $startDate = new \DateTime('-3 months');
@@ -112,6 +112,9 @@ class AppFixtures extends Fixture
         return $taskNames[array_rand($taskNames)];
     }
 
+    /**
+     * @return array<int, array{string, string}>
+     */
     private function getProjectData(): array
     {
         return [
@@ -121,6 +124,9 @@ class AppFixtures extends Fixture
         ];
     }
 
+    /**
+     * @return array<int, array{string, string, string, array<int, string>}>
+     */
     private function getUserData(): array
     {
         return [

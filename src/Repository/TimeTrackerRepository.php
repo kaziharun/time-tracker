@@ -1,10 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Repository;
 
 use App\Entity\TimeTracker;
-use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -18,6 +18,7 @@ class TimeTrackerRepository extends ServiceEntityRepository
         parent::__construct($registry, TimeTracker::class);
     }
 
+    /** @return array<TimeTracker> */
     public function findByUser(int $userId): array
     {
         return $this->findBy(
@@ -26,6 +27,7 @@ class TimeTrackerRepository extends ServiceEntityRepository
         );
     }
 
+    /** @return array<TimeTracker> */
     public function findOverlappingEntries(
         \DateTimeInterface $startDate,
         \DateTimeInterface $startTime,
@@ -47,7 +49,9 @@ class TimeTrackerRepository extends ServiceEntityRepository
             $qb->setParameter('endTime', $startTime);
         }
 
-        return $qb->getQuery()->getResult();
-    }
+        /** @var array<TimeTracker> $timeTracker */
+        $timeTracker = $qb->getQuery()->getResult();
 
+        return $timeTracker;
+    }
 }

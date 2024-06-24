@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\DTO;
@@ -6,10 +7,9 @@ namespace App\DTO;
 class ProjectDTO
 {
     public function __construct(
-        private string  $name,
-        private string $description
-    )
-    {
+        private readonly string $name,
+        private readonly ?string $description
+    ) {
     }
 
     public function getName(): string
@@ -17,7 +17,7 @@ class ProjectDTO
         return $this->name;
     }
 
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
     }

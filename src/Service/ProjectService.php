@@ -1,9 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Service;
 
 use App\DTO\ProjectDTO;
+use App\DTO\ResultDTO;
 use App\Entity\Project;
 use App\Factory\ProjectFactory;
 use App\Repository\ProjectRepository;
@@ -15,42 +17,44 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class ProjectService implements ProjectServiceInterface
 {
     public function __construct(
-        private ProjectRepository      $projectRepository,
-        private TimeTrackerRepository  $timeTrackerRepository,
-        private EntityManagerInterface $entityManager,
-        private ProjectFactory         $projectFactory
-    )
-    {
+        private readonly ProjectRepository $projectRepository,
+        private readonly TimeTrackerRepository $timeTrackerRepository,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly ProjectFactory $projectFactory
+    ) {
     }
 
-    public function getAllProjects(): array
+    /**
+     * @return array<Project>
+     */
+    public function getAll(): array
     {
         return $this->projectRepository->findAll();
     }
 
-    public function validateAndPersist(ProjectDTO $projectDto): Result
+    public function validateAndPersist(ProjectDTO $projectDto): ResultDTO
     {
         $project = $this->projectFactory->createOrUpdate($projectDto);
 
         $this->entityManager->persist($project);
         $this->entityManager->flush();
 
-        return Result::Success('Project created Successfully.');
+        return ResultDTO::Success('Project created Successfully.');
     }
 
-    public function updateProject(ProjectDTO $projectDto, Project $project): Result
+    public function update(ProjectDTO $projectDto, Project $project): ResultDTO
     {
         $project = $this->projectFactory->createOrUpdate($projectDto, $project);
 
         $this->entityManager->persist($project);
         $this->entityManager->flush();
 
-        return Result::Success( 'Time tracker has been updated.');
+        return ResultDTO::Success('Project has been updated.');
     }
 
-    public function findProjectOrThrow(int $id): Project
+    public function findOrThrow(int $projectId): Project
     {
-        $project = $this->projectRepository->find($id);
+        $project = $this->projectRepository->find($projectId);
 
         if (!$project) {
             throw new NotFoundHttpException('The project does not exist.');
@@ -59,9 +63,9 @@ class ProjectService implements ProjectServiceInterface
         return $project;
     }
 
-    public function deleteProject(int $id): void
+    public function delete(int $projectId): void
     {
-        $project = $this->projectRepository->find($id);
+        $project = $this->projectRepository->find($projectId);
 
         $timeTracker = $this->timeTrackerRepository->findOneBy(['project' => $project]);
 
